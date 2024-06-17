@@ -1,0 +1,24 @@
+#include &lt;stdio.h&gt;
+int main() {
+// Variable to store the temperature in centigrade
+float temperature;
+// Prompt the user to enter the temperature
+printf(&quot;Enter the temperature in centigrade: &quot;);
+// Read the input temperature from the user
+scanf(&quot;%f&quot;, &amp;temperature);
+// Determine and display the temperature state
+if (temperature &lt; 0) {
+printf(&quot;Freezing weather.\n&quot;);
+} else if (temperature &lt; 10) {
+printf(&quot;Very Cold weather.\n&quot;);
+} else if (temperature &lt; 20) {
+printf(&quot;Cold weather.\n&quot;);
+} else if (temperature &lt; 30) {
+printf(&quot;Normal in Temp.\n&quot;);
+} else if (temperature &lt; 40) {
+printf(&quot;Its Hot.\n&quot;);
+} else {
+printf(&quot;Its Very Hot.\n&quot;);
+}
+return 0;
+}
