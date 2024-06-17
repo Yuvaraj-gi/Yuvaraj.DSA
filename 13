@@ -1,0 +1,489 @@
+Snakes game:
+
+#include <conio.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <time.h>
+
+#define WIDTH 20
+#define HEIGHT 20
+
+int score = 0;
+bool gameOver;
+int x, y, fruitX, fruitY, tailX[100], tailY[100];
+int nTail = 0;
+
+enum eDirection { STOP = 0, LEFT, RIGHT, UP, DOWN };
+enum eDirection dir;
+
+void Setup() {
+gameOver = false;
+dir = STOP;
+x = WIDTH / 2;
+y = HEIGHT / 2;
+fruitX = rand() % WIDTH;
+fruitY = rand() % HEIGHT;
+score = 0;
+}
+
+void Draw() {
+system("cls");
+for (int i = 0; i < WIDTH + 2; i++)
+printf("#");
+printf("\n");
+
+for (int i = 0; i < HEIGHT; i++) {
+for (int j = 0; j < WIDTH; j++) {
+if (j == 0)
+printf("#");
+if (i == y && j == x)
+printf("O");
+else if (i == fruitY && j == fruitX)
+printf("F");
+else {
+bool printTail = false;
+for (int k = 0; k < nTail; k++) {
+if (tailX[k] == j && tailY[k] == i) {
+printf("o");
+printTail = true;
+}
+}
+if (!printTail)
+printf(" ");
+}	
+
+if (j == WIDTH - 1)
+printf("#");
+}
+printf("\n");
+}
+
+for (int i = 0; i < WIDTH + 2; i++)
+printf("#");
+printf("\n");
+printf("Score:%d", score);
+}
+
+void Input() {
+if (_kbhit()) {
+switch (_getch()) {
+case 'a':
+dir = LEFT;
+break;
+case 'd':
+dir = RIGHT;
+break;
+case 'w':
+dir = UP;
+break;
+case 's':
+dir = DOWN;
+break;
+case 'x':
+gameOver = true;
+break;
+}
+}
+}
+
+void Logic() {
+int prevX = tailX[0];
+int prevY = tailY[0];
+int prev2X, prev2Y;
+tailX[0] = x;
+tailY[0] = y;
+for (int i = 1; i < nTail; i++) {
+prev2X = tailX[i];
+prev2Y = tailY[i];
+tailX[i] = prevX;
+tailY[i] = prevY;
+prevX = prev2X;
+prevY = prev2Y;
+}
+switch (dir) {
+case LEFT:
+x--;
+break;
+case RIGHT:
+x++;
+break;
+case UP:
+y--;
+break;
+case DOWN:
+y++;
+break;
+default:
+break;
+}
+
+if (x >= WIDTH) x = 0;
+else if (x < 0) x = WIDTH - 1;
+if (y >= HEIGHT) y = 0;
+else if (y < 0) y = HEIGHT - 1;
+
+for (int i = 0; i < nTail; i++) {
+if (tailX[i] == x && tailY[i] == y)
+gameOver = true;
+}
+
+if (x == fruitX && y == fruitY) {
+score += 10;
+fruitX = rand() % WIDTH;
+fruitY = rand() % HEIGHT;
+nTail++;
+}
+}
+
+int main() {
+Setup();
+while (!gameOver) {
+Draw();
+Input();
+Logic();
+// Slow down the game to make it playable
+for (int i = 0; i < 10000000; i++) {}
+}
+return 0;
+}
+
+Sudoku game:
+
+#include <stdio.h>
+#include <stdlib.h>
+ 
+// N is the size of the 2D matrix   N*N
+#define N 9
+ 
+/* A utility function to print grid */
+void print(int arr[N][N])
+{	
+     for (int i = 0; i < N; i++)
+      {
+         for (int j = 0; j < N; j++)
+            printf("%d ",arr[i][j]);
+         printf("\n");
+       }
+}
+ 
+// Checks whether it will be legal  
+// to assign num to the
+// given row, col
+int isSafe(int grid[N][N], int row, 
+                       int col, int num)
+{
+     
+    // Check if we find the same num 
+    // in the similar row , we return 0
+    for (int x = 0; x <= 8; x++)
+        if (grid[row][x] == num)
+            return 0;
+ 
+    // Check if we find the same num in the 
+    // similar column , we return 0
+    for (int x = 0; x <= 8; x++)
+        if (grid[x][col] == num)
+            return 0;
+ 
+    // Check if we find the same num in the 
+    // particular 3*3 matrix, we return 0
+    int startRow = row - row % 3, 
+                 startCol = col - col % 3;
+   
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            if (grid[i + startRow][j + 
+                          startCol] == num)
+                return 0;
+ 
+    return 1;
+}
+
+int solveSudoku(int grid[N][N], int row, int col)
+{
+     
+    // Check if we have reached the 8th row 
+    // and 9th column (0
+    // indexed matrix) , we are 
+    // returning true to avoid
+    // further backtracking
+    if (row == N - 1 && col == N)
+        return 1;
+ 
+    //  Check if column value  becomes 9 ,
+    //  we move to next row and
+    //  column start from 0
+    if (col == N) 
+    {
+        row++;
+        col = 0;
+    }
+   
+    // Check if the current position 
+    // of the grid already contains
+    // value >0, we iterate for next column
+    if (grid[row][col] > 0)
+        return solveSudoku(grid, row, col + 1);
+ 
+    for (int num = 1; num <= N; num++) 
+    {
+if (isSafe(grid, row, col, num)==1) 
+        {
+            /* assigning the num in the 
+               current (row,col)
+               position of the grid
+               and assuming our assigned num 
+               in the position
+               is correct     */
+            grid[row][col] = num;
+           
+            //  Checking for next possibility with next
+            //  column
+            if (solveSudoku(grid, row, col + 1)==1)
+                return 1;
+        }
+grid[row][col] = 0;
+    }
+    return 0;
+}
+ 
+int main()
+{
+    // 0 means unassigned cells
+    int grid[N][N] = { { 3, 0, 6, 5, 0, 8, 4, 0, 0 },
+                       { 5, 2, 0, 0, 0, 0, 0, 0, 0 },
+                       { 0, 8, 7, 0, 0, 0, 0, 3, 1 },
+                       { 0, 0, 3, 0, 1, 0, 0, 8, 0 },
+                       { 9, 0, 0, 8, 6, 3, 0, 0, 5 },
+                       { 0, 5, 0, 0, 9, 0, 6, 0, 0 },
+                       { 1, 3, 0, 0, 0, 0, 2, 5, 0 },
+                       { 0, 0, 0, 0, 0, 0, 0, 7, 4 },
+                       { 0, 0, 5, 2, 0, 6, 3, 0, 0 } };
+ 
+    if (solveSudoku(grid, 0, 0)==1)
+        print(grid);
+    else
+        printf("No solution exists");
+ 
+    return 0;
+                         }
+Travel planner:
+
+Travel planner :
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Structure to represent a destination
+struct Destination {
+    char name[50];
+    char date[20];
+};
+
+typedef struct Destination Destination;
+
+// Function to add a destination to the travel planner
+void addDestination(Destination destinations[], int* numDestinations) {
+    printf("Enter destination name: ");
+    scanf("%s", destinations[*numDestinations].name);
+    printf("Enter travel date: ");
+    scanf("%s", destinations[*numDestinations].date);
+    (*numDestinations)++;
+}
+
+// Function to display all destinations in the travel planner
+void displayDestinations(Destination destinations[], int numDestinations) {
+    printf("\nDestinations in Travel Planner:\n");
+    for (int i = 0; i < numDestinations; i++) {
+        printf("Destination: %s, Date: %s\n", destinations[i].name, destinations[i].date);
+    }
+}
+
+int main() {
+    Destination destinations[100]; // Assuming a maximum of 100 destinations
+    int numDestinations = 0;
+    int choice;
+
+    do {
+        printf("\nTravel Planner Menu:\n");
+        printf("1. Add Destination\n");
+        printf("2. Display Destinations\n");
+        printf("3. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                addDestination(destinations, &numDestinations);
+                break;
+            case 2:
+                displayDestinations(destinations, numDestinations);
+                break;
+            case 3:
+                printf("Exiting Travel Planner. Have a nice trip!\n");
+                break;
+
+default:
+                printf("Invalid choice. Please enter a valid option.\n");
+        }
+    } while (choice != 3);
+
+    return 0;
+}
+
+
+
+Cash flow Minimizer:
+
+#include <stdio.h>
+#define N 4 
+void minimizeCashFlow(int amount[N][N])
+{
+    
+    int net[N] = {0};
+    for (int p = 0; p < N; p++)
+        for (int i = 0; i < N; i++)
+            net[p] += amount[i][p] - amount[p][i];
+                                  int minCashFlow = 0;
+    for (int i = 0; i < N; i++)
+        if (net[i] < 0)
+            minCashFlow += net[i];
+
+    printf("Minimum cash flow required is: %d\n", -minCashFlow);
+}
+
+int main()
+{
+    int amount[N][N] = {
+        {0, 1000, 2000, 0},
+        {0, 0, 5000, 2000},
+        {0, 0, 0, 5000},
+        {0, 0, 0, 0}
+    };
+
+    minimizeCashFlow(amount);
+    return 0;
+}
+
+Text Editor(Cut,Copy,Paste):
+
+                      
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_LENGTH 1000
+
+// Global buffer to store the text
+char buffer[MAX_LENGTH];
+
+// Function to print the current text in the buffer
+void printText() {
+    printf("Current Text: %s\n", buffer);
+}
+
+// Function to cut text from start to end index and update buffer
+void cutText(int start, int end) {
+    if (start >= 0 && end < MAX_LENGTH && start <= end) {
+        // Copy text to be cut
+        char cut[MAX_LENGTH];
+        strncpy(cut, buffer + start, end - start + 1);
+
+        memmove(buffer + start, buffer + end + 1, strlen(buffer + end + 1) + 1);
+
+        printf("Cut Text: %s\n", cut);
+    } else {
+        printf("Invalid range for cut operation.\n");
+    }
+}
+
+// Function to copy text from start to end index
+void copyText(int start, int end) {
+    if (start >= 0 && end < MAX_LENGTH && start <= end) {
+        // Copy text to be copied
+        char copy[MAX_LENGTH];
+        strncpy(copy, buffer + start, end - start + 1);
+
+        printf("Copied Text: %s\n", copy);
+    } else {
+        printf("Invalid range for copy operation.\n");
+    }
+}
+void pasteText(int index) {
+    char paste[MAX_LENGTH];
+    printf("Enter text to paste: ");
+    fgets(paste, MAX_LENGTH, stdin);
+
+    // Remove newline character from paste
+    paste[strcspn(paste, "\n")] = '\0';
+
+    if (index >= 0 && index <= strlen(buffer)) {
+        // Shift existing text right to make space for pasted text
+        memmove(buffer + index + strlen(paste), buffer + index, strlen(buffer + index) + 1);
+        
+        // Copy paste text into buffer
+        strncpy(buffer + index, paste, strlen(paste));
+
+        printf("Pasted Text: %s\n", buffer);
+    } else {
+        printf("Invalid index for paste operation.\n");
+    }
+}
+                
+int main() {
+    // Initialize buffer with empty string
+    buffer[0] = '\0';
+
+    int choice;
+    int start, end, index;
+
+    while (1) {
+        printf("\nText Editor Menu:\n");
+        printf("1. Print Text\n");
+        printf("2. Cut Text (Specify start and end indices)\n");
+        printf("3. Copy Text (Specify start and end indices)\n");
+        printf("4. Paste Text (Specify index)\n");
+        printf("5. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printText();
+                break;
+            case 2:
+                printf("Enter start index: ");
+                scanf("%d", &start);
+                printf("Enter end index: ");
+                scanf("%d", &end);
+                cutText(start, end);
+                break;
+            case 3:
+                printf("Enter start index: ");
+                scanf("%d", &start);
+                printf("Enter end index: ");
+                scanf("%d", &end);
+                copyText(start, end);
+                break;
+            case 4:
+                printf("Enter index to paste: ");
+                scanf("%d", &index);
+                getchar(); // Consume newline left by scanf
+                pasteText(index);
+                break;
+            case 5:
+                printf("Exiting...\n");
+                exit(0);
+            default:
+                printf("Invalid choice. Please enter a valid option.\n");
+                break;
+        }	
+    }
+
+    return 0;
+}
+
+
+
+          
+
